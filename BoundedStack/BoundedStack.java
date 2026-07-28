@@ -102,8 +102,8 @@ public class BoundedStack {
 
     // คืนสำเนารายชื่อนิสิตทั้งหมด
     // ผลลัพธ์: คืน List ใหม่ที่มีข้อมูลเหมือนกับรายชื่อนิสิตในห้อง
-    public List<String> getusers() {
-        return null;
+    public List<String> users() {
+        return new ArrayList<>(users);
     }
     
 }

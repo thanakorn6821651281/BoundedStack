@@ -34,8 +34,8 @@ public class BoundedStackTestRunner {
         System.out.println("=== BoundedStack Test Suite ===\n");
 
         testCreators();
-        testAdd();
-        testRemove();
+        testPush();
+        testPop();
         testObservers();
         testProducer();
 
@@ -54,12 +54,12 @@ public class BoundedStackTestRunner {
 
         BoundedStack empty = new BoundedStack(50);
         check("new() -> empty users", empty.usersize() == 0);
-        check("new() -> room capacity is 50",empty.getrooms() == 50);    
+        check("new() -> room capacity is 50",empty.getroomssize() == 50);    
 
         BoundedStack b = new BoundedStack(Arrays.asList("A", "B", "C") , 50);
         check("new(list) -> correct users size", b.usersize() == 3);
         check("new(list) -> contains B", b.usercontains("B"));
-        check("new(list) -> correct room capacity", b.getrooms() == 50);
+        check("new(list) -> correct room capacity", b.getroomssize() == 50);
 
     // boundary: list ว่างคือขอบล่างที่ถูกต้อง
         BoundedStack fromEmpty = new BoundedStack(new ArrayList<String>(), 50);
@@ -68,7 +68,7 @@ public class BoundedStackTestRunner {
         // input ที่ผิดเงื่อนไขต้องโยน exception ไม่ใช่ปล่อยผ่าน
         boolean threwDup = false;
         try {
-            new BoundedStack(Arrays.asList("A", "A"), 50);
+            new BoundedStack(Arrays.asList("A", "A"), 0);
         } catch (IllegalArgumentException e) {
             threwDup = true;
         }
@@ -76,7 +76,7 @@ public class BoundedStackTestRunner {
 
         boolean threwNull = false;
         try {
-            new BoundedStack(Arrays.asList("A", null), 50);
+            new BoundedStack(Arrays.asList("A", null), 0);
         } catch (IllegalArgumentException e) {
             threwNull = true;
         }
@@ -90,70 +90,70 @@ public class BoundedStackTestRunner {
         }
         check("new(null) -> throws IllegalArgumentException", threwNullList);
     }
-    // --- Mutator: add ต้องรักษาลำดับและกันเพลงซ้ำ ---
-    private static void testAdd() {
-        System.out.println("\n-- Add --");
+    // --- Mutator: push ต้องรักษาลำดับและกันเพลงซ้ำ ---
+    private static void testPush() {
+        System.out.println("\n-- Push --");
 
         BoundedStack b = new BoundedStack(50);
-        check("add(A) -> returns true", b.add("A"));
-        check("add(A) -> size 1", b.usersize() == 3);
-        check("add(A) -> found by contains", b.usercontains("A"));
+        check("push(A) -> returns true", b.push("A"));
+        check("push(A) -> size 1", b.usersize() == 3);
+        check("push(A) -> found by contains", b.usercontains("A"));
 
-        b.add("B");
-        b.add("C");
-        check("add preserves insertion order",
+        b.push("B");
+        b.push("C");
+        check("push preserves insertion order",
                 b.users().equals(Arrays.asList("A", "B", "C")));
 
         // ชื่อ-นามสกุลซ้ำไม่ใช่ error — คืน false เฉย ๆ
-        check("add duplicate -> returns false", !b.add("A"));
-        check("failed add leaves size unchanged", b.usersize() == 3);
+        check("push duplicate -> returns false", !b.push("A"));
+        check("failed push leaves size unchanged", b.usersize() == 3);
         // input ที่ผิดเงื่อนไขต้องโยน exception
         boolean threwEmpty = false;
         try {
-            b.add("");
+            b.push("");
         } catch (IllegalArgumentException e) {
             threwEmpty = true;
         }
-        check("add(empty string) -> throws IllegalArgumentException", threwEmpty);
+        check("push(empty string) -> throws IllegalArgumentException", threwEmpty);
 
         boolean threwNull = false;
         try {
-            b.add(null);
+            b.push(null);
         } catch (IllegalArgumentException e) {
             threwNull = true;
         }
-        check("add(null) -> throws IllegalArgumentException", threwNull);
+        check("push(null) -> throws IllegalArgumentException", threwNull);
         
         // boundary: เติมจนเต็มพอดีแล้วเติมเพิ่ม
         BoundedStack full = new BoundedStack(50);
         for (int i = 0; i < 50; i++) {
-            full.add("user" + i);
+            full.push("user" + i);
         }
         check("can fill up to 50", full.usersize() == 50);
-        check("add when full -> returns false", !full.add("one more"));
+        check("push when full -> returns false", !full.push("one more"));
         check("full users stays at 50",
                 full.users().size() == 50);
     }
-    // --- Mutator: remove ทั้งกรณีพบและไม่พบ ---
-    private static void testRemove() {
-        System.out.println("\n-- Remove --");
+    // --- Mutator: pop ทั้งกรณีพบและไม่พบ ---
+    private static void testPop() {
+        System.out.println("\n-- Pop --");
 
         BoundedStack s = new BoundedStack(Arrays.asList("A", "B", "C"), 50);
-        check("remove(B) -> returns true", s.remove("B"));
-        check("remove -> size decreases", s.usersize() == 2);
-        check("remove -> users is gone", !s.usercontains("B"));
-        check("remove keeps the others in order",
+        check("pop(B) -> returns true", s.pop("B"));
+        check("pop -> size decreases", s.usersize() == 2);
+        check("pop -> users is gone", !s.usercontains("B"));
+        check("pop keeps the others in order",
                 s.users().equals(Arrays.asList("A", "C")));
 
         // ลบชื่อ-นามสกุลที่ไม่มีไม่ใช่ error — คืน false เฉย ๆ
-        check("remove  users -> returns false", !s.remove("nope"));
-        check("failed remove leaves size unchanged", s.usersize() == 2);
+        check("pop  users -> returns false", !s.pop("nope"));
+        check("failed pop leaves size unchanged", s.usersize() == 2);
 
         // boundary: ลบจนหมด
-        s.remove("A");
-        s.remove("C");
-        check("remove all -> empty", s.usersize() == 0);
-        check("remove on empty users -> returns false", !s.remove("A"));
+        s.pop("A");
+        s.pop("C");
+        check("pop all -> empty", s.usersize() == 0);
+        check("pop on empty users -> returns false", !s.pop("A"));
     }
     // --- Observer ต้องไม่มี side effect ---
     private static void testObservers() {
