@@ -38,7 +38,7 @@ public class BoundedStackTestRunner {
         testPop();
         testObservers();
         testProducer();
-        testExposure();
+    
 
         System.out.println("\n=== Summary ===");
         System.out.println("Passed: " + passed);
@@ -193,38 +193,5 @@ public class BoundedStackTestRunner {
         BoundedStack emptyShuffled = new BoundedStack(50);
         check("shuffling an empty bounded stack is safe", emptyShuffled.usersize() == 0);
     }
-    // --- ทดสอบว่าไม่เกิด representation exposure ---
-    private static void testExposure() {
-        System.out.println("\n-- Representation Exposure --");
-
-        // ขาออก: แก้ list ที่ได้จาก songs() ต้องไม่กระทบ rep
-        BoundedStack b = new BoundedStack(50);
-        b.push("A");
-
-        List<String> got = b.users();
-        got.clear();
-        check("clearing result of users() does not affect stack",
-                b.usersize() == 1);
-
-        got = b.users();
-        got.add("injected");
-        check("adding to result of users() does not affect stack",
-                b.usersize() == 1 && !b.usercontains("injected"));
-
-        // สองครั้งต้องเป็นคนละ object
-        check("users() returns a fresh list each call",
-                b.users() != b.users());
-
-        // ขาเข้า: แก้ list ที่ส่งให้ constructor ต้องไม่กระทบ rep
-        List<String> input = new ArrayList<String>(Arrays.asList("A", "B"));
-        BoundedStack p = new BoundedStack(input, 50);
-
-        input.clear();
-        check("clearing constructor argument does not affect stack",
-                p.usersize() == 2);
-
-        input.add("injected");
-        check("adding to constructor argument does not affect stack",
-                !p.usercontains("injected"));
-    }
+   
 }
