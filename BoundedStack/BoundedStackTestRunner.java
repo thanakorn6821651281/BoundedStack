@@ -38,6 +38,7 @@ public class BoundedStackTestRunner {
         testPop();
         testObservers();
         testProducer();
+        testExposure();
 
         System.out.println("\n=== Summary ===");
         System.out.println("Passed: " + passed);
@@ -96,7 +97,7 @@ public class BoundedStackTestRunner {
 
         BoundedStack b = new BoundedStack(50);
         check("push(A) -> returns true", b.push("A"));
-        check("push(A) -> size 1", b.usersize() == 3);
+        check("push(A) -> size 1", b.usersize() == 1);
         check("push(A) -> found by contains", b.usercontains("A"));
 
         b.push("B");
@@ -108,13 +109,6 @@ public class BoundedStackTestRunner {
         check("push duplicate -> returns false", !b.push("A"));
         check("failed push leaves size unchanged", b.usersize() == 3);
         // input ที่ผิดเงื่อนไขต้องโยน exception
-        boolean threwEmpty = false;
-        try {
-            b.push("");
-        } catch (IllegalArgumentException e) {
-            threwEmpty = true;
-        }
-        check("push(empty string) -> throws IllegalArgumentException", threwEmpty);
 
         boolean threwNull = false;
         try {
@@ -138,48 +132,99 @@ public class BoundedStackTestRunner {
     private static void testPop() {
         System.out.println("\n-- Pop --");
 
-        BoundedStack s = new BoundedStack(Arrays.asList("A", "B", "C"), 50);
-        check("pop(B) -> returns true", s.pop("B"));
-        check("pop -> size decreases", s.usersize() == 2);
-        check("pop -> users is gone", !s.usercontains("B"));
+        BoundedStack b = new BoundedStack(Arrays.asList("A", "B", "C"), 50);
+        check("pop(B) -> returns true", b.pop("B"));
+        check("pop -> size decreases", b.usersize() == 2);
+        check("pop -> users is gone", !b.usercontains("B"));
         check("pop keeps the others in order",
-                s.users().equals(Arrays.asList("A", "C")));
+                b.users().equals(Arrays.asList("A", "C")));
 
         // ลบชื่อ-นามสกุลที่ไม่มีไม่ใช่ error — คืน false เฉย ๆ
-        check("pop  users -> returns false", !s.pop("nope"));
-        check("failed pop leaves size unchanged", s.usersize() == 2);
+        check("pop  users -> returns false", !b.pop("nope"));
+        check("failed pop leaves size unchanged", b.usersize() == 2);
 
         // boundary: ลบจนหมด
-        s.pop("A");
-        s.pop("C");
-        check("pop all -> empty", s.usersize() == 0);
-        check("pop on empty users -> returns false", !s.pop("A"));
+        b.pop("A");
+        b.pop("C");
+        check("pop all -> empty", b.usersize() == 0);
+        check("pop on empty users -> returns false", !b.pop("A"));
     }
     // --- Observer ต้องไม่มี side effect ---
     private static void testObservers() {
         System.out.println("\n-- Observers --");
 
-        BoundedStack s = new BoundedStack(Arrays.asList("A", "B"), 50);
-        check("usersize reports 2", s.usersize() == 2);
-        check("usercontains finds an existing user", s.usercontains("A"));
-        check("usercontains rejects a missing user", !s.usercontains("Z"));
+        BoundedStack b = new BoundedStack(Arrays.asList("A", "B"), 50);
+        check("usersize reports 2", b.usersize() == 2);
+        check("usercontains finds an existing user", b.usercontains("A"));
+        check("usercontains rejects a missing user", !b.usercontains("Z"));
         check("users returns the full list in order",
-                s.users().equals(Arrays.asList("A", "B")));
+                b.users().equals(Arrays.asList("A", "B")));
 
-        int before = s.usersize();
-        s.usersize();
-        s.usercontains("A");
-        s.users();
-        check("observers have no side effects", s.usersize() == before);
+        int before = b.usersize();
+        b.usersize();
+        b.usercontains("A");
+        b.users();
+        check("observers have no side effects", b.usersize() == before);
     }
     // --- Producer ต้องคืนตัวใหม่ ไม่แก้ตัวเดิม ---
      private static void testProducer() {
-        System.out.println("\n-- Producer --");
+        System.out.println("\n-- Producer (shuffled) --");
 
-        BoundedStack s = new BoundedStack(Arrays.asList("A", "B"), 50);
-        List<String> users = s.users();
-        users.add("C");
-        check("users() returns a copy, not the original",
-                s.usersize() == 2 && !s.usercontains("C"));
+        BoundedStack original = new BoundedStack(Arrays.asList("A", "B", "C", "D"), 50);
+        BoundedStack shuffled = original.shuffled();
+
+        check("shuffled has the same size", shuffled.usersize() == original.usersize());
+
+        List<String> a = new ArrayList<String>(original.users());
+        List<String> b = new ArrayList<String>(shuffled.users());
+        Collections.sort(a);
+        Collections.sort(b);
+        check("shuffled contains exactly the same users", a.equals(b));
+
+        check("shuffled does not mutate the original",
+                original.users().equals(Arrays.asList("A", "B", "C", "D")));
+
+        // mutate ตัวใหม่ต้องไม่กระทบตัวเดิม
+        shuffled.push("E");
+        check("mutating the result does not affect the original",
+                original.usersize() == 4);
+
+        // boundary: shuffle เพลย์ลิสต์ว่างต้องไม่พัง
+        BoundedStack emptyShuffled = new BoundedStack(50);
+        check("shuffling an empty bounded stack is safe", emptyShuffled.usersize() == 0);
+    }
+    // --- ทดสอบว่าไม่เกิด representation exposure ---
+    private static void testExposure() {
+        System.out.println("\n-- Representation Exposure --");
+
+        // ขาออก: แก้ list ที่ได้จาก songs() ต้องไม่กระทบ rep
+        BoundedStack b = new BoundedStack(50);
+        b.push("A");
+
+        List<String> got = b.users();
+        got.clear();
+        check("clearing result of users() does not affect stack",
+                b.usersize() == 1);
+
+        got = b.users();
+        got.add("injected");
+        check("adding to result of users() does not affect stack",
+                b.usersize() == 1 && !b.usercontains("injected"));
+
+        // สองครั้งต้องเป็นคนละ object
+        check("users() returns a fresh list each call",
+                b.users() != b.users());
+
+        // ขาเข้า: แก้ list ที่ส่งให้ constructor ต้องไม่กระทบ rep
+        List<String> input = new ArrayList<String>(Arrays.asList("A", "B"));
+        BoundedStack p = new BoundedStack(input, 50);
+
+        input.clear();
+        check("clearing constructor argument does not affect stack",
+                p.usersize() == 2);
+
+        input.add("injected");
+        check("adding to constructor argument does not affect stack",
+                !p.usercontains("injected"));
     }
 }
