@@ -2,50 +2,59 @@ import java.util.*;
 
 public class BoundedStack {
 
-    public static final int MAX_NISITS = 50;
-    public static final int MAX_ROOMS = 50;
+    public static final int MAX_CAPACITY = 50;
     // ===== representation =====
     // Abstraction Function:
     // AF(users) = ห้องเรียน ที่ประกอบไปด้วยนิสิต
 
     // Representation Invariant:
     // ห้องเรียนต้อง > 0
+    // ห้องเรียนต้องมีความจุ <= MAX_CAPACITY
     // นิสิตต้อง != null
-    // ห้องเรียนต้องมีความจุ <= 50
-    // นิสิตต้อง <= 50
+    // ความจุนิสิตต้อง <= ความจุห้องเรียน
     // ชื่อ-นามสกุลห้ามซ้ำกัน
     
-    private final List<String>  users;
-    private final int rooms;
+    private final List<String>  users; // รายชื่อนิสิต
+    private final int rooms; // ความจุห้องเรียน
 
     //แปลง RI ทุกข้อเป็น assert หนึ่งบรรทัด พร้อมข้อความอธิบาย
     private void checkRep() {
-        
+        assert rooms > 0 && rooms <= MAX_CAPACITY; // ความจุห้องต้อง > 0 && ความจุห้องต้อง <= MAX_CAPACITY
+        assert users != null;; // รายชื่อนิสิต้อง != null
+        assert users.size() <= rooms; // ความจุนิสิตต้อง <= ความจุห้องเรียน
+        Set<String> seen = new HashSet<>();
+        for (String u : users) {
+            assert u != null;
+            assert seen.add(u); // ชื่อ-นามสกุลนิสิตห้ามซ้ำกัน
+        }
     }
     
     // ===== Creator =====
-    // สร้างห้องเรียนว่างที่มีความจุ MAX_ROOMS
+    // สร้างห้องเรียนว่างที่มีความจุ MAX_CAPACITY
     public BoundedStack(){
-        this.users = null;
-        this.rooms = 0;
-        
+        this.users = new ArrayList<>();
+        this.rooms = MAX_CAPACITY;
+        checkRep();
     }
-    // เช็คว่าห้องเรียนมีความจุ<=0 || ถ้าความจุห้อง > MAX_ROOMS จะเกิด exception
+    // เช็คว่าถ้าความจุห้อง<=0 || ถ้าความจุห้อง > MAX_ROOMS จะเกิด exception
     public BoundedStack(int rooms) {
-    this.users = null;
+        if(rooms <= 0 || rooms > MAX_CAPACITY) throw new IllegalArgumentException("Invalid room Capacity");
+    this.users = new ArrayList<>();
     this.rooms = rooms;
-    
     }
 /**
  * สร้างห้องเรียนที่มีนิสิตเริ่มต้นจาก initial และความจุเท่ากับ rooms
  * @param initial รายชื่อนิสิตเริ่มต้น
  * @param rooms ความจุของห้อง
- * @throws IllegalArgumentException หาก initial เป็น null, rooms <= 0, rooms > MAX_ROOMS, หรือ initial.size() > rooms
+ * @throws IllegalArgumentException ถ้า initial เป็น null, rooms <= 0 || rooms > MAX_CAPACITY, initial.size() > rooms
  */
     
     public BoundedStack(List<String> initial, int rooms) {
-    this.users = null;
-    this.rooms = 0;
+        if(initial == null) throw new IllegalArgumentException(); // ถ้านิสิต = null จะเกิด exception
+        if(rooms <= 0 || rooms > MAX_CAPACITY ) throw new IllegalArgumentException(); // ถ้าความจุห้อง <= 0 || ความจุห้อง > MAX_CAPACITY จะเกิด exception
+        if(initial.size() > rooms) throw new IllegalArgumentException(); //ถ้าความจุนิสิต > ความจุห้อง จะเกิด exception
+    this.users = new ArrayList<>(initial);
+    this.rooms = rooms;
     
     }
     
