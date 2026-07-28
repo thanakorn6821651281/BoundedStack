@@ -20,7 +20,7 @@ public class BoundedStack {
 
     //แปลง RI ทุกข้อเป็น assert หนึ่งบรรทัด พร้อมข้อความอธิบาย
     private void checkRep() {
-
+        
     }
     
     // ===== Creator =====
@@ -28,12 +28,13 @@ public class BoundedStack {
     public BoundedStack(){
         this.users = null;
         this.rooms = 0;
-        checkRep();
+        
     }
-    // สร้างห้องเรียนว่างที่มีความจุเท่ากับ rooms
+    // เช็คว่าห้องเรียนมีความจุ<=0 || ถ้าความจุห้อง > MAX_ROOMS จะเกิด exception
     public BoundedStack(int rooms) {
     this.users = null;
     this.rooms = rooms;
+    
     }
 /**
  * สร้างห้องเรียนที่มีนิสิตเริ่มต้นจาก initial และความจุเท่ากับ rooms
@@ -41,11 +42,11 @@ public class BoundedStack {
  * @param rooms ความจุของห้อง
  * @throws IllegalArgumentException หาก initial เป็น null, rooms <= 0, rooms > MAX_ROOMS, หรือ initial.size() > rooms
  */
-  
+    
     public BoundedStack(List<String> initial, int rooms) {
     this.users = null;
     this.rooms = 0;
-    checkRep();
+    
     }
     
     //===== mutator =====
