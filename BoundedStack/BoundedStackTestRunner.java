@@ -3,7 +3,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-
+/**
+ * จัดทำโดย: นายธนกร อุตะนะตะ 6821651281  
+ * พีรณัฐ หอมแม้น 6821651566
+ * BoundedStackTestRunner
+ */
 /**
  * Test runner 
  */
@@ -54,17 +58,17 @@ public class BoundedStackTestRunner {
         System.out.println("-- Creators --");
 
         BoundedStack empty = new BoundedStack(50);
-        check("new() -> empty users", empty.usersize() == 0);
-        check("new() -> room capacity is 50",empty.getroomssize() == 50);    
+        check("new() -> empty users", empty.size() == 0);
+        check("new() -> room capacity is 50",empty.getssize() == 50);    
 
         BoundedStack b = new BoundedStack(Arrays.asList("A", "B", "C") , 50);
-        check("new(list) -> correct users size", b.usersize() == 3);
-        check("new(list) -> contains B", b.usercontains("B"));
-        check("new(list) -> correct room capacity", b.getroomssize() == 50);
+        check("new(list) -> correct users size", b.size() == 3);
+        check("new(list) -> contains B", b.contains("B"));
+        check("new(list) -> correct room capacity", b.getssize() == 50);
 
     // boundary: list ว่างคือขอบล่างที่ถูกต้อง
         BoundedStack fromEmpty = new BoundedStack(new ArrayList<String>(), 50);
-        check("new(empty list) -> empty", fromEmpty.usersize() == 0);
+        check("new(empty list) -> empty", fromEmpty.size() == 0);
 
         // input ที่ผิดเงื่อนไขต้องโยน exception ไม่ใช่ปล่อยผ่าน
         boolean threwDup = false;
@@ -97,8 +101,8 @@ public class BoundedStackTestRunner {
 
         BoundedStack b = new BoundedStack(50);
         check("push(A) -> returns true", b.push("A"));
-        check("push(A) -> size 1", b.usersize() == 1);
-        check("push(A) -> found by contains", b.usercontains("A"));
+        check("push(A) -> size 1", b.size() == 1);
+        check("push(A) -> found by contains", b.contains("A"));
 
         b.push("B");
         b.push("C");
@@ -107,7 +111,7 @@ public class BoundedStackTestRunner {
 
         // ชื่อ-นามสกุลซ้ำไม่ใช่ error — คืน false เฉย ๆ
         check("push duplicate -> returns false", !b.push("A"));
-        check("failed push leaves size unchanged", b.usersize() == 3);
+        check("failed push leaves size unchanged", b.size() == 3);
         // input ที่ผิดเงื่อนไขต้องโยน exception
 
         boolean threwNull = false;
@@ -123,9 +127,9 @@ public class BoundedStackTestRunner {
         for (int i = 0; i < 50; i++) {
             full.push("user" + i);
         }
-        check("can fill up to 50", full.usersize() == 50);
+        check("can fill up to 50", full.size() == 50);
         check("push when full -> returns false", !full.push("one more"));
-        check("full users stays at 50",
+        check("full users stays at capacity",
                 full.users().size() == 50);
     }
     // --- Mutator: pop ทั้งกรณีพบและไม่พบ ---
@@ -134,19 +138,19 @@ public class BoundedStackTestRunner {
 
         BoundedStack b = new BoundedStack(Arrays.asList("A", "B", "C"), 50);
         check("pop(B) -> returns true", b.pop("B"));
-        check("pop -> size decreases", b.usersize() == 2);
-        check("pop -> users is gone", !b.usercontains("B"));
+        check("pop -> size decreases", b.size() == 2);
+        check("pop -> users is gone", !b.contains("B"));
         check("pop keeps the others in order",
                 b.users().equals(Arrays.asList("A", "C")));
 
         // ลบชื่อ-นามสกุลที่ไม่มีไม่ใช่ error — คืน false เฉย ๆ
         check("pop  users -> returns false", !b.pop("nope"));
-        check("failed pop leaves size unchanged", b.usersize() == 2);
+        check("failed pop leaves size unchanged", b.size() == 2);
 
         // boundary: ลบจนหมด
         b.pop("A");
         b.pop("C");
-        check("pop all -> empty", b.usersize() == 0);
+        check("pop all -> empty", b.size() == 0);
         check("pop on empty users -> returns false", !b.pop("A"));
     }
     // --- Observer ต้องไม่มี side effect ---
@@ -154,17 +158,17 @@ public class BoundedStackTestRunner {
         System.out.println("\n-- Observers --");
 
         BoundedStack b = new BoundedStack(Arrays.asList("A", "B"), 50);
-        check("usersize reports 2", b.usersize() == 2);
-        check("usercontains finds an existing user", b.usercontains("A"));
-        check("usercontains rejects a missing user", !b.usercontains("Z"));
+        check("size reports 2", b.size() == 2);
+        check("contains finds an existing user", b.contains("A"));
+        check("contains rejects a missing user", !b.contains("Z"));
         check("users returns the full list in order",
                 b.users().equals(Arrays.asList("A", "B")));
 
-        int before = b.usersize();
-        b.usersize();
-        b.usercontains("A");
+        int before = b.size();
+        b.size();
+        b.contains("A");
         b.users();
-        check("observers have no side effects", b.usersize() == before);
+        check("observers have no side effects", b.size() == before);
     }
     // --- Producer ต้องคืนตัวใหม่ ไม่แก้ตัวเดิม ---
      private static void testProducer() {
@@ -173,7 +177,7 @@ public class BoundedStackTestRunner {
         BoundedStack original = new BoundedStack(Arrays.asList("A", "B", "C", "D"), 50);
         BoundedStack shuffled = original.shuffled();
 
-        check("shuffled has the same size", shuffled.usersize() == original.usersize());
+        check("shuffled has the same size", shuffled.size() == original.size());
 
         List<String> a = new ArrayList<String>(original.users());
         List<String> b = new ArrayList<String>(shuffled.users());
@@ -187,11 +191,10 @@ public class BoundedStackTestRunner {
         // mutate ตัวใหม่ต้องไม่กระทบตัวเดิม
         shuffled.push("E");
         check("mutating the result does not affect the original",
-                original.usersize() == 4);
+                original.size() == 4);
 
         // boundary: shuffle เพลย์ลิสต์ว่างต้องไม่พัง
         BoundedStack emptyShuffled = new BoundedStack(50);
-        check("shuffling an empty bounded stack is safe", emptyShuffled.usersize() == 0);
+        check("shuffling an empty bounded stack is safe", emptyShuffled.size() == 0);
     }
-   
 }

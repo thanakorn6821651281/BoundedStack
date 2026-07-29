@@ -1,7 +1,12 @@
     import java.util.*;
 
     public class BoundedStack {
-
+        
+        /**
+         * จัดทำโดย: นายธนกร อุตะนะตะ 6821651281
+         * พีรณัฐ หอมแม้น 6821651566	
+         * BoundedStack ใช้เก็บรายชื่อนิสิตในห้องเรียน โดยมีความจุจำกัด
+         */
         // ===== representation =====
         // Abstraction Function:
         // AF(users) = ห้องเรียน ที่ประกอบไปด้วยนิสิต
@@ -83,24 +88,24 @@
 
         //===== observer =====
         // คืนค่าจำนวนของนิสิตในห้องเรียน
-        public int usersize() {
+        public int size() {
             return users.size();
         }
         // คืนค่าความจุของห้องเรียน
-        public int getroomssize() {
+        public int getssize() {
             return capacity;
         }
 
         
         // ตรวจสอบว่ามีชื่อ-นามสกุลนิสิตที่ระบุอยู่ในห้องหรือไม่
         // คืนค่า: true หากมี, false หากไม่มี
-        public boolean usercontains(String user){
+        public boolean contains(String user){
             return users.contains(user);
         }
         // ตรวจสอบว่าห้องเรียนเต็มหรือไม่
         // คืนค่า: true หากห้องเต็ม, false หากห้องยังไม่เต็ม
         // ห้องเต็มหมายถึงจำนวนนิสิตในห้อง >= ความจุของห้อง
-        public boolean Fullroom() {
+        public boolean Full() {
         return users.size() >= capacity;
         }
 
